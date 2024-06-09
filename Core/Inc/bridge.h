@@ -31,6 +31,8 @@ typedef struct {
 msg_t* getNewMsgPtr(uint16_t size);
 void freeMsgPtr(msg_t *message);
 void bridgeInit(bridge_t *bridge_ptr, uint16_t max_msg_lenght);
+msg_t* UARTRxByteHandler(bridge_t *bridge_ptr);
+msg_t* SPIRxByteHandler(bridge_t *bridge_ptr);
 
 
 

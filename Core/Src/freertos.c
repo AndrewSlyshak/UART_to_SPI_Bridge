@@ -217,50 +217,17 @@ void StartSPIHandlerTask(void const * argument)
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-	while(1)
-	{
-
-	}
-}
-
-//void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
 	if(&hspi1 == hspi)
 	{
-		//rx check
-		if( '\0' == Bridge.spi_rx_msg->data[Bridge.spi_rx_msg->size] )
-		{
-			//check if not empty
-			if( 0 != Bridge.spi_rx_msg->size )
-			{
-				//push in queue msg and get new ptr
-				xQueueSendFromISR(SPIRxQueueHandle, &Bridge.spi_rx_msg, pdFALSE);
-				Bridge.spi_rx_msg = getNewMsgPtr(Bridge.MAX_MSG_LENGHT);
-			}
-		}
-		else
-		{
-			Bridge.spi_rx_msg->size++;	//read next byte
-			if(Bridge.spi_rx_msg->size > Bridge.MAX_MSG_LENGHT) Bridge.spi_rx_msg->size = 0;	//over
-		}
 
-		//transmitting real message
-		if(Bridge.spi_tx_msg != Bridge.no_data_msg)
+		//push into queue receded message
+		msg_t *message = SPIRxByteHandler(&Bridge);
+		if(message)
 		{
-			//tx done check
-			if( Bridge.spi_tx_msg->tx_index >= Bridge.spi_tx_msg->size )
-			{
-				freeMsgPtr(Bridge.spi_tx_msg);
-				Bridge.spi_tx_msg = Bridge.no_data_msg;
-			}
-			else
-			{
-				Bridge.spi_tx_msg->tx_index++;
-			}
+			xQueueSendFromISR(SPIRxQueueHandle, &message, pdFALSE);
 		}
 
 		//rx tx next byte
@@ -275,7 +242,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	freeMsgPtr(Bridge.uart_tx_msg);
+	freeMsgPtr(Bridge.uart_tx_msg);	//tx done - destroy msg
 }
 
 
@@ -283,22 +250,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart == &huart4)
 	{
-		if('\0' == Bridge.uart_rx_msg->data[Bridge.uart_rx_msg->size])
+		//push into queue receded message
+		msg_t *message = UARTRxByteHandler(&Bridge);
+		if(message)
 		{
-			//check if not empty
-			if( 0 != Bridge.uart_rx_msg->size )
-			{
-				//push in queue msg and get new ptr
-				xQueueSendFromISR(UARTRxQueueHandle, &Bridge.uart_rx_msg, pdFALSE);
-				Bridge.uart_rx_msg = getNewMsgPtr(Bridge.MAX_MSG_LENGHT);
-
-				//TODO add memory optimization for small message
-			}
-		}
-		else
-		{
-			Bridge.uart_rx_msg->size++;
-			if(Bridge.uart_rx_msg->size > Bridge.MAX_MSG_LENGHT) Bridge.uart_rx_msg->size = 0;	//over
+			xQueueSendFromISR(UARTRxQueueHandle, &message, pdFALSE);
 		}
 
 		HAL_UART_Receive_IT(&huart4, &(Bridge.uart_rx_msg->data[Bridge.uart_rx_msg->size]), 1);
