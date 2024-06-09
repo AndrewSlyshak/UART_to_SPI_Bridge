@@ -58,5 +58,5 @@
 
 ## Авторы
 
-- Slyshak Andrey - [yourusername](https://github.com/yourusername)
+- Slyshak Andrey - [AndrewSlyshak](https://github.com/AndrewSlyshak)
 
