@@ -97,11 +97,10 @@ int main(void)
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
-  Bridge.spi_rx_msg = getNewMsgPtr(1000);
-  Bridge.uart_rx_msg = getNewMsgPtr(1000);
+  bridgeInit(&Bridge, 5000);
 
   HAL_UART_Receive_IT(&huart4, Bridge.uart_rx_msg->data, 1);
-
+  HAL_SPI_TransmitReceive_IT(&hspi1, Bridge.spi_tx_msg->data, Bridge.spi_rx_msg->data, 1);
 
   /* USER CODE END 2 */
 

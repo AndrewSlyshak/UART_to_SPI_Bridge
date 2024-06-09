@@ -2514,6 +2514,7 @@ __weak void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
   *               the configuration information for SPI module.
   * @retval None
   */
+
 __weak void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   /* Prevent unused argument(s) compilation warning */
